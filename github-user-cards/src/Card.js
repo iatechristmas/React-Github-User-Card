@@ -1,5 +1,6 @@
-import React from "react";
+import React, { Component } from "react";
 import styled, { css, keyframes } from "styled-components";
+import axios from "axios";
 
 const animatedCss = css`
   opacity: 1;
@@ -14,6 +15,7 @@ const primaryCss = css`
 const StyledCard = styled.div`
   width: ${(props) => (props.big ? "450px" : "300px")};
   padding: 15px;
+  background-color: lightblue;
   opacity: 0;
   transform: translateY(50px);
   transition: 500ms all ease-in-out;
@@ -22,17 +24,37 @@ const StyledCard = styled.div`
   border-radius: 5px;
   ${(props) => props.animated && animatedCss}
   ${(props) => props.primary && primaryCss}
+
+  img {
+    width: 200px;
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 1);
+    border-radius: 5px;
+    margin: 10%;
+  }
+
+  .link {
+    text-decoration: none;
+    font-size: 1.2rem;
+  }
 `;
 
-class Card extends React.Component {
+class Card extends Component {
   constructor(props) {
     super(props);
     this.state = {
       animated: false,
+      userFollowers: [],
     };
   }
 
   componentDidMount() {
+    axios.get(`${this.props.user.followers_url}`).then((res) => {
+      console.log("res data", res.data);
+      this.setState({
+        userFollowers: res.data,
+      });
+    });
+
     setTimeout(() => {
       this.setState(() => {
         return { animated: true };
@@ -47,10 +69,10 @@ class Card extends React.Component {
       primary,
       noMargin,
       big,
-      friend,
+      user,
       ...props
     } = this.props;
-    console.log("friend inside card component", friend);
+    console.log("friend inside card component", user);
     return (
       <StyledCard
         animated={this.state.animated}
@@ -61,7 +83,15 @@ class Card extends React.Component {
         noMargin={noMargin}
         {...props}
       >
-        <h4>{friend.login}</h4>
+        <img src={user.avatar_url} alt="" />
+        <h4>{user.login}</h4>
+        <p>{user.name}</p>
+        {this.state.userFollowers.map((follower) => (
+          <p>{follower.login}</p>
+        ))}
+        <a className="link" href={user.html_url}>
+          {user.html_url}
+        </a>
       </StyledCard>
     );
   }
